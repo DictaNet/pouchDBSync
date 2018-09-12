@@ -27,16 +27,7 @@ $(function(){
 				   						'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + contact.Attachment.split('|')[0] +' </button>' + '</td></tr>'
 			   
 			   var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';
-			   /*
-			   var tdlength= $("contactList td").filter(function() {
-					return $(this).text().toLowerCase() == item_x ;//get td with item_x 
-				   alert($(this).text().toLowerCase());
-				 }).length;
-
-				if(!tdlength){ //td with html item_x  does not exists.
-				   //code here
-				}
-			   */
+			   			  
 			   if(contact.Attachment.split('|')[0]){				
 				   $("#contactList tbody").append(newContact);	
 				   attachments.push(contact.Attachment);			   	     
