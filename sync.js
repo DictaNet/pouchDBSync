@@ -4,7 +4,7 @@ $(function(){
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB('http://3b7fced3.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://3b7fced3.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
 		
