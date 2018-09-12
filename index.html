@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>PouchDB Sync Demo</title>
+		<link rel="shortcut icon" href="">
+		<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">	
+		<link rel="stylesheet" href="dbsync.css">
+	</head>
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Contacts</a>
+				</div>
+			</div>
+		</nav>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-10">
+					<h2>Add new contact </h2>
+					<hr />
+					<form id="contactForm" class="form-horizontal">
+						<div class="form-group">
+							<label for="name" class="col-sm-2 control-label">Name</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="name" placeholder="Name">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="mobile" class="col-sm-2 control-label">Mobile</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="mobile" placeholder="Mobile">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="email" class="col-sm-2 control-label">Email</label>
+							<div class="col-sm-10">
+								<input type="email" class="form-control" id="email" placeholder="Email">
+							</div>
+						</div>					
+						<div class="form-group">    
+							<label for="attachment" class="col-sm-2 control-label">Attachment</label>
+							<div class="col-sm-10"> 
+								<div class="input-group">
+									<label class="input-group-btn">
+										<span class="btn btn-default">
+											Browse&hellip;<input type="file" style="display: none;" multiple>											
+										</span>
+									</label>
+									<input type="text" class="form-control" readonly>
+								</div>						
+							</div>						
+						</div>
+
+						<div class="form-group">
+							<div class="col-sm-offset-2 col-sm-10">							
+								<button type="submit" class="btn btn-default save">Save Contact</button>
+							</div>
+						</div>						
+					</form>
+					<hr />
+				</div>
+			</div>			
+			<div class="row">
+				<div class="col-md-10">
+					<h2>Contact List</h2>
+					<hr />
+					<div id="contactsWrapper">
+						<table id="contactList" class="table table-bordered">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Mobile</th>
+									<th>Email</th>                            
+									<th>Attachment</th>  
+								</tr>
+							</thead>
+							<tbody id="contactList_body">
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<script src="assets/jquery-3.3.1.min.js"></script>
+			<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+			<script src="assets/pouchdb-6.2.0.min.js"></script>        
+			<script src="sync.js"></script>
+	</body>
+</html>
