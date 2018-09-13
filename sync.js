@@ -223,15 +223,11 @@ $(function(){
 	/***********************************************************
 		 ContextMenu to delete document from localDB
 	************************************************************/
-	var $contextMenu = $("#contextMenu");
-	var $rowClicked;
-	
-	$(function() {
-    	$contextMenu.hide();
-	});
-	
-	$(function () {		
-
+		
+	$(function () {				
+		var $contextMenu = $("#contextMenu");
+		var $rowClicked;
+		
 		$("body").on("contextmenu", "table tr", function (e) {
 			$rowClicked = $(this)
 
