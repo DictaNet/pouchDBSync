@@ -47,7 +47,7 @@
 								<div class="input-group">
 									<label class="input-group-btn">
 										<span class="btn btn-default">
-											Browse&hellip;<input type="file" style="display: none;" multiple>											
+											Browse&hellip;<input id="file-typ" type="file" style="display: none;" multiple>											
 										</span>
 									</label>
 									<input type="text" class="form-control" readonly>
@@ -86,14 +86,44 @@
 				<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
 					<li><a tabindex="-1">Actions</a></li>
 					 <li class="divider"></li>
-				  <li><a tabindex="-1" href="#">Delete</a></li>
+				  <li data-toggle="modal" data-target="#confirm-delete"><a tabindex="-1" href="#">Delete</a></li>
 				</ul>
   			</div>
 			
-			<!-- Bootstrap / jQuery / PouchDB -->
-			<script src="assets/jquery-3.3.1.min.js"></script>
-			<script src="assets/bootstrap/js/bootstrap.min.js"></script>							
-			<script src="assets/pouchdb-6.2.0.min.js"></script>        
-			<script src="sync.js"></script>			
+		  <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="modalLabel">Confirm Delete</h4>
+					</div>
+
+					<div class="modal-body">
+						<p>You are about to delete contact <b><i class="title"></i></b> , this procedure is irreversible.</p>
+						<p>Do you want to proceed?</p>
+						<p class="debug-url"></p>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<a class="btn btn-danger btn-ok">Delete</a>
+					</div>
+				</div>
+			</div>
+		</div>
+					
+		<!--div class="alert alert-success  alert-top" id="success-alert">
+			<button type="button" class="close" data-dismiss="alert">x</button>
+			<strong>Success! </strong>
+			Contact has been deleted.
+		</div-->
+			
+		<!-- Bootstrap / jQuery / PouchDB -->
+		<script src="assets/jquery-3.3.1.min.js"></script>
+		<script src="assets/bootstrap/js/bootstrap.min.js"></script>							
+		<script src="assets/pouchdb-6.2.0.min.js"></script>        
+		<script src="sync.js"></script>	
+			
 	</body>
 </html>

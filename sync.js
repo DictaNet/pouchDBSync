@@ -4,9 +4,10 @@ $(function(){
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB('https://5e9daaed.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://b3062878.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
+	
 	$("#contextMenu").hide();
 	/*********************************************************
 		Display Contacts
@@ -145,7 +146,6 @@ $(function(){
 	
   	$(document).ready( function() {
 		$(':file').on('fileselect', function(event, numFiles, label) {
-
 			var input = $(this).parents('.input-group').find(':text'),
 				log = numFiles > 1 ? numFiles + ' files selected' : label;
 
@@ -165,17 +165,22 @@ $(function(){
 	  // Closure to capture the file information.
 	  reader.onload = (function(theFile) {
 		return function(e) {
-		  var binaryData = e.target.result;
+		  var binaryData = e.target.result;					
 		  //Converting Binary Data to base 64
 		  attachment_content_base64 = window.btoa(binaryData);
 		  attachment_name = theFile.name;
-		  console.log(attachment_content_base64);				
+		 // console.log(attachment_content_base64);			
 		};
 	  })(f);	  
 	  // Read in the image file as a data URL.
 	  reader.readAsBinaryString(f);					
+	}		
+	
+	function create_blob(file, callback) {
+    	var reader = new FileReader();
+    	reader.onload = function() { callback(reader.result) };
+    	reader.readAsDataURL(file);
 	}
-		
 	/***********************************************************
 				Displaying Attachments
 	************************************************************/
@@ -221,8 +226,11 @@ $(function(){
 	});		
 	
 	/***********************************************************
-		 ContextMenu to delete document from localDB
+		 ContextMenu 
 	************************************************************/
+	var td_val;
+	var td_contactname;
+	
 	$(function () {
 		var $contextMenu = $("#contextMenu");
 		var $rowClicked;
@@ -243,20 +251,39 @@ $(function(){
 			return false;
 		});
 
-    	$contextMenu.on("click", "a", function () {
-		
+    	$contextMenu.on("click", "a", function () {	
+			td_val = "";
+			td_contactname ="";
 			if($(this).text().trim() == "Delete"){
-				var td_val =$rowClicked.children("*")[0].innerHTML;
-				deleteDoc(td_val.split('|')[0].trim(), td_val.split('|')[1].trim());        	
+				td_val =$rowClicked.children("*")[0].innerHTML;
+				td_contactname = $rowClicked.children("*")[1].innerHTML;								     	
 			}
 			$contextMenu.hide();		
 		});
 
 		$(document).click(function () {
 			$contextMenu.hide();
-		});				
-
+		});	
 	});	
+	
+	/****************************************************************
+		 Confirm and delete document from localDB
+	*****************************************************************/
+	
+	$('#confirm-delete').on('click', '.btn-ok', function(e) {     
+		var $modalDiv = $(e.delegateTarget);            		            
+		
+		deleteDoc(td_val.split('|')[0].trim(), td_val.split('|')[1].trim());
+		
+		setTimeout(function() {
+				$modalDiv.modal('hide').removeClass('loading');
+		}, 1000)			
+    });
+	
+	$('#confirm-delete').on('show.bs.modal', function(e) {
+		var data = $(e.relatedTarget).data();
+		$('.title', this).text(td_contactname);            
+    });		
 	
 });
 
