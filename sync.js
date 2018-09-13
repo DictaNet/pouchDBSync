@@ -4,7 +4,7 @@ $(function(){
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB(' https://db63d3d1.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://5e9daaed.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
 		
@@ -24,10 +24,9 @@ $(function(){
 			  //console.log(contact);			   
 			   var newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +
 				   					'<button type="button" class="btn btn-default attachment"><input type="hidden" id="'+ contact.Attachment.split('|')[0] +'" value="'+ contact.Attachment.split('|')[1]+
-				   						'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + contact.Attachment.split('|')[0] +' </button>' + '</td></tr>'
-			   
-			   var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';
-			   			  
+				   						'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + contact.Attachment.split('|')[0] +' </button>' + '</td></tr>'			   
+			   var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
+				
 			   if(contact.Attachment.split('|')[0]){				
 				   $("#contactList tbody").append(newContact);	
 				   attachments.push(contact.Attachment);			   	     
@@ -132,22 +131,18 @@ $(function(){
 	}).on('error', function (err) {
 	  // handle error
 	});
+		
+	/***********************************************************
+		Processing attachment before uploading to Database
+	************************************************************/	  	
 	
-	
-  	// We can attach the `fileselect` event to all file inputs on the page
-  	$(document).on('change', ':file', function() {
+	$(document).on('change', ':file', function() {
     	var input = $(this),
         	numFiles = input.get(0).files ? input.get(0).files.length : 1,
         	label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     	input.trigger('fileselect', [numFiles, label]);
   	});
-
 	
-	/***********************************************************
-		Processing attachment before uploading to Database
-	************************************************************/
-	
-  	// We can watch for our custom `fileselect` event like this
   	$(document).ready( function() {
 		$(':file').on('fileselect', function(event, numFiles, label) {
 
@@ -212,16 +207,10 @@ $(function(){
 					d.body.appendChild(document.createElement('img')).src = applicationType + base64data.split('|')[1];				
 			}			
 		}		
-	}	
-	
-	/***********************************************************
-			Open Attachment
-	************************************************************/
+	}		
 	
 	$('#contactList').on('click','.attachment', function(){		
-		var fname = $(this).text();		
-		//var td_val = $(this).closest('tr').find('td:nth-child(1)').text();
-		//deleteDoc(td_val.split('|')[0].trim(), td_val.split('|')[1].trim());		
+		var fname = $(this).text();					
 		var i=0;		
 		for (i; i < attachments.length; i++) 
 		{ 							
@@ -229,8 +218,7 @@ $(function(){
 				Viewer(attachments[i]);	
 			}			
 		}				
-	});
-		
+	});		
 	
 	/***********************************************************
 		 ContextMenu to delete document from localDB
