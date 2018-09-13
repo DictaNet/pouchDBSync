@@ -7,7 +7,7 @@ $(function(){
 	var remoteDB = new PouchDB('https://5e9daaed.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
-		
+	$("#contextMenu").hide();
 	/*********************************************************
 		Display Contacts
 	**********************************************************/
@@ -223,12 +223,12 @@ $(function(){
 	/***********************************************************
 		 ContextMenu to delete document from localDB
 	************************************************************/
-		
-	$(function () {				
+	$(function () {
 		var $contextMenu = $("#contextMenu");
 		var $rowClicked;
-		
+
 		$("body").on("contextmenu", "table tr", function (e) {
+			$("#contextMenu").show();
 			$rowClicked = $(this)
 
 			var pageWidth = $(window).width();
