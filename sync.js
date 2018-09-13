@@ -181,7 +181,7 @@ $(function(){
 	************************************************************/
 	
 	function Viewer(base64data){
-				
+		
 		if(base64data){			
 			var decodedContent = atob(base64data.split('|')[1]);
 			var byteArray = new Uint8Array(decodedContent.length)
@@ -223,9 +223,14 @@ $(function(){
 	/***********************************************************
 		 ContextMenu to delete document from localDB
 	************************************************************/
-	$(function () {
-		var $contextMenu = $("#contextMenu");
-		var $rowClicked;
+	var $contextMenu = $("#contextMenu");
+	var $rowClicked;
+	
+	$(function() {
+    	$contextMenu.hide();
+	});
+	
+	$(function () {		
 
 		$("body").on("contextmenu", "table tr", function (e) {
 			$rowClicked = $(this)
