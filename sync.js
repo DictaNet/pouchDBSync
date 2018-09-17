@@ -1,13 +1,13 @@
-$(function(){     
-	
+$(function(){     	
+		
 	window.attachments = new Array();	
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB('https://49725a6d.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://c1886d4d.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
-	
+		
 	$("#contextMenu").hide();
 	/*********************************************************
 		Display Contacts
@@ -17,20 +17,34 @@ $(function(){
 	
 	function populateContactsData(_id){		
 		
+		var audio_exts = ['wav', 'mp3', 'mp4', 'm4a', 'ogg', 'wma' ];
 		remoteDB.get(_id, function(err, contact) {
 		    if (err) {
 				return console.log(err);
 		    }
 			else {			
-			  //console.log(contact);			   
-			   var newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +
-				   					'<button type="button" class="btn btn-default attachment"><input type="hidden" id="'+ contact.Attachment.split('|')[0] +'" value="'+ contact.Attachment.split('|')[1]+
-				   						'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + contact.Attachment.split('|')[0] +' </button>' + '</td></tr>'			   
+			 // console.log(contact);		
+			  var att_name = contact.Attachment.split('|')[0]
+			  var att_data = contact.Attachment.split('|')[1]
+			  var newContact = '';
+			  var fileExt = att_name.split('.').pop();
+							
+			  if ($.inArray(fileExt, audio_exts) >= 0){
+			  	var  audio_attactment_data ='<audio controls="controls" id="audio" >' + att_name + ' <source id="source" src="audio/wav;base64,'+ att_data +'" type="audio/wav" /></audio>';	
+				newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + audio_attactment_data;
+			  }	
+			  else{
+				  var  attachment_data = '<button type="button" class="btn btn-default attachment"><input type="hidden" id="'+ att_name +'" value="'+ att_data +
+											'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + att_name +' </button>' + '</td></tr>';
+				  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + attachment_data;
+			  }
+			  
 			   var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
 				
-			   if(contact.Attachment.split('|')[0]){				
+			   if(contact.Attachment.split('|')[0]){				   
 				   $("#contactList tbody").append(newContact);	
 				   attachments.push(contact.Attachment);			   	     
+				   
 			   }else{
 				  $("#contactList tbody").append(newContactWithoutAttachment);  
 			   }				
@@ -64,39 +78,55 @@ $(function(){
 		Insert Data to local PouchDB (which inturn will be synced to remote CouchDB )
 	*********************************************************************************/
 	
-	$('#contactForm').submit(function(event) {
-    	event.preventDefault();
+	$('#contactForm button').click(function(event) {				
+    	event.preventDefault();		
 		var uniqueId = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+		var _id =  $('#id_rev').val().split('|')[0];
+		var _rev = $('#id_rev').val().split('|')[1];
 		var name = $('#name').val();
 		var email = $('#email').val();
 		var mobile = $('#mobile').val();
-		var doc = {
-			"_id" : "rmo_" + uniqueId,
-			"Name" : name,
-			"Email" : email,
-			"Mobile" : mobile,
-			"Attachment" : attachment_name + "|" +attachment_content_base64 
-			/*"_attachments":
-				{
-				  attachment_name:
-				  {
-					"content_type": "application/pdf",
-					"data": attachment_content_base64
-				  }
-				}
-			*/
+		var doc = '';
+		
+		if ($(this).attr("value") == "save") {			
+			doc = {
+				"_id" : "rmo_" + uniqueId,
+				"Name" : name,
+				"Email" : email,
+				"Mobile" : mobile,
+				"Attachment" : attachment_name + "|" +attachment_content_base64 				
+			}
+				
+			localDB.put(doc).then(function (response) {
+				console.log("Document created Successfully", response)
+			  }).then(function (err) {
+				console.log("Error", err)
+			  });				
 		}
-	
-		localDB.put(doc).then(function (response) {
-			console.log("Document created Successfully", response)
-		  }).then(function (err) {
-			console.log("Error", err)
-		  });	
+		
+		if ($(this).attr("value") == "update") {						
+			doc = {			
+				"_rev" : _rev,
+				"_id" : _id,
+				"Name" : name,
+				"Email" : email,
+				"Mobile" : mobile,
+				"Attachment" : attachment_name + "|" +attachment_content_base64 				
+			}
+			localDB.put(doc).then(function (response) {
+				console.log("Document updated Successfully", response)
+			  }).then(function (err) {
+				console.log("Error", err)
+			  });
+			
+			$('#btn_save').removeClass('invisible').addClass('visible');
+			$('#btn_edit').removeClass('visible').addClass('invisible');
+		}
 		
     	$('#contactForm')[0].reset();
-		//location.reload();	
-    });
 		
+    });
+			
 	/********************************************************************************
 		Remove Data from local PouchDB (which inturn will be synced to remote CouchDB )
 	*********************************************************************************/
@@ -169,7 +199,7 @@ $(function(){
 		  //Converting Binary Data to base 64
 		  attachment_content_base64 = window.btoa(binaryData);
 		  attachment_name = theFile.name;
-		 // console.log(attachment_content_base64);			
+		  //console.log(attachment_content_base64);			
 		};
 	  })(f);	  
 	  // Read in the image file as a data URL.
@@ -181,6 +211,7 @@ $(function(){
     	reader.onload = function() { callback(reader.result) };
     	reader.readAsDataURL(file);
 	}
+	
 	/***********************************************************
 				Displaying Attachments
 	************************************************************/
@@ -258,6 +289,23 @@ $(function(){
 				td_val =$rowClicked.children("*")[0].innerHTML;
 				td_contactname = $rowClicked.children("*")[1].innerHTML;								     	
 			}
+			
+			if($(this).text().trim() == "Edit"){
+				
+				_id_rev = $rowClicked.children("*")[0].innerHTML;
+				_name = $rowClicked.children("*")[1].innerHTML;
+				_mobile = $rowClicked.children("*")[2].innerHTML;
+				_email = $rowClicked.children("*")[3].innerHTML;
+				_attachment = $rowClicked.children("*")[4].innerHTML;
+				
+				$('#id_rev').val(_id_rev);
+				$('#name').val(_name);
+				$('#mobile').val(_mobile);
+				$('#email').val(_email);
+								
+				$('#btn_save').removeClass('visible').addClass('invisible');
+				$('#btn_edit').removeClass('invisible').addClass('visible');
+			}
 			$contextMenu.hide();		
 		});
 
@@ -283,7 +331,22 @@ $(function(){
 	$('#confirm-delete').on('show.bs.modal', function(e) {
 		var data = $(e.relatedTarget).data();
 		$('.title', this).text(td_contactname);            
-    });		
+    });	
+			
+	
+	function playByteArray( bytes ) {
+    var buffer = new Uint8Array( bytes.length );
+    buffer.set( new Uint8Array(bytes), 0 );
+
+    context.decodeAudioData(buffer.buffer, play);
+	}
+
+	function play( audioBuffer ) {
+		var source = context.createBufferSource();
+		source.buffer = audioBuffer;
+		source.connect( context.destination );
+		source.start(0);
+	}
 	
 });
 
