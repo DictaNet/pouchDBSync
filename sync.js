@@ -1,63 +1,24 @@
+ var data_url;
+ var attachments = new Array();	
+
 $(function(){     	
-		
-	window.attachments = new Array();	
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB('https://c1886d4d.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://9a9f9c1a.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
-		
+	var attachment_blob = "";
+	var  attachment_type = "";
+	var att_data;
 	$("#contextMenu").hide();
-	/*********************************************************
-		Display Contacts
-	**********************************************************/
-	// when the site loads in the browser, load all contacts
-  	loadContacts();
 	
-	function populateContactsData(_id){		
-		
-		var audio_exts = ['wav', 'mp3', 'mp4', 'm4a', 'ogg', 'wma' ];
-		remoteDB.get(_id, function(err, contact) {
-		    if (err) {
-				return console.log(err);
-		    }
-			else {			
-			 // console.log(contact);		
-			  var att_name = contact.Attachment.split('|')[0]
-			  var att_data = contact.Attachment.split('|')[1]
-			  var newContact = '';
-			  var fileExt = att_name.split('.').pop();
-							
-			  if ($.inArray(fileExt, audio_exts) >= 0){
-			  	var  audio_attactment_data ='<audio controls="controls" id="audio" >' + att_name + ' <source id="source" src="audio/wav;base64,'+ att_data +'" type="audio/wav" /></audio>';	
-				newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + audio_attactment_data;
-			  }	
-			  else{
-				  var  attachment_data = '<button type="button" class="btn btn-default attachment"><input type="hidden" id="'+ att_name +'" value="'+ att_data +
-											'" class="form-control attachment_B64_data" readonly><span class="glyphicon glyphicon-file"></span>' + att_name +' </button>' + '</td></tr>';
-				  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + attachment_data;
-			  }
-			  
-			   var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
-				
-			   if(contact.Attachment.split('|')[0]){				   
-				   $("#contactList tbody").append(newContact);	
-				   attachments.push(contact.Attachment);			   	     
-				   
-			   }else{
-				  $("#contactList tbody").append(newContactWithoutAttachment);  
-			   }				
-		   }
-		});		
-	}
-		
 	/*********************************************************
 	//Reading the contents of a Document from Remote CouchDB
 	**********************************************************/	
     function loadContacts() {		
 		clearContactList();
-		remoteDB.allDocs({startkey: "rmo_", endkey: "rmo_\ufff0"},function(err, docs) {			
+		remoteDB.allDocs({include_docs: true,attachments : true, attachment_format: 'base64', startkey: "rmo_", endkey: "rmo_\ufff0"},function(err, docs) {			
 		   if (err) {
 			  return console.log(err);
 		   } else {			  
@@ -72,7 +33,38 @@ $(function(){
 			
 	function clearContactList(){
 		$("#contactList_body").empty();		
-	}	
+	}
+	
+	/*********************************************************
+		Display Contacts
+	**********************************************************/
+	// when the site loads in the browser, load all contacts
+  	loadContacts();
+		
+	function populateContactsData(_id){				
+		
+		var audio_exts = ['wav', 'mp3', 'mp4', 'm4a', 'ogg', 'wma' ];	
+		var  blob_url ;
+		
+		remoteDB.get(_id, {attachments: true}).then(function (contact) { 
+			 //console.log(contact);		
+			  var newContact = '';
+			  var fileExt = contact.FileName.split('.').pop();	
+			  var contenttype = JSON.stringify(contact._attachments.attachment_name.content_type);
+			 
+              var ui_attachment = '<button id="'+ contact._id +'" type="button" class="btn btn-default attachment"'+'"><span class="glyphicon glyphicon-file"></span>' + contact.FileName +'</button>'+'</td></tr>';
+			  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + ui_attachment;			
+			  
+              var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
+				
+			   if(contact.FileName){				   
+				   $("#contactList tbody").append(newContact);	
+				   attachments.push(contact.FileName);	
+			   }else{
+				  $("#contactList tbody").append(newContactWithoutAttachment);  
+			   }
+		});		
+	}
 	
 	/********************************************************************************
 		Insert Data to local PouchDB (which inturn will be synced to remote CouchDB )
@@ -90,11 +82,19 @@ $(function(){
 		
 		if ($(this).attr("value") == "save") {			
 			doc = {
-				"_id" : "rmo_" + uniqueId,
-				"Name" : name,
-				"Email" : email,
-				"Mobile" : mobile,
-				"Attachment" : attachment_name + "|" +attachment_content_base64 				
+				_id : "rmo_" + uniqueId,
+				Name : name,
+				Email : email,
+				Mobile : mobile,
+				FileName : attachment_name,
+				_attachments:
+				{
+					attachment_name:
+					{
+						type: attachment_type,
+						data :attachment_blob
+					}
+				}
 			}
 				
 			localDB.put(doc).then(function (response) {
@@ -104,15 +104,24 @@ $(function(){
 			  });				
 		}
 		
-		if ($(this).attr("value") == "update") {						
+		if ($(this).attr("value") == "update") {				
 			doc = {			
 				"_rev" : _rev,
 				"_id" : _id,
 				"Name" : name,
 				"Email" : email,
 				"Mobile" : mobile,
-				"Attachment" : attachment_name + "|" +attachment_content_base64 				
-			}
+				"FileName" : attachment_name,
+				"_attachments":
+				{
+					attachment_name:
+					{
+						type: attachment_type,
+						data :attachment_blob
+					}
+			    }
+		   }			
+			
 			localDB.put(doc).then(function (response) {
 				console.log("Document updated Successfully", response)
 			  }).then(function (err) {
@@ -121,9 +130,9 @@ $(function(){
 			
 			$('#btn_save').removeClass('invisible').addClass('visible');
 			$('#btn_edit').removeClass('visible').addClass('invisible');
-		}
+	   }
 		
-    	$('#contactForm')[0].reset();
+       $('#contactForm')[0].reset();
 		
     });
 			
@@ -157,7 +166,7 @@ $(function(){
 	  // replicate resumed (e.g. new changes replicating, user went back online)
 	}).on('denied', function (err) {
 	  // a document failed to replicate (e.g. due to permissions)
-	}).on('complete', function (info) {
+	}).on('complete', function (info){
 	  // handle complete
 	}).on('error', function (err) {
 	  // handle error
@@ -165,13 +174,12 @@ $(function(){
 		
 	/***********************************************************
 		Processing attachment before uploading to Database
-	************************************************************/	  	
-	
+	************************************************************/	  			
 	$(document).on('change', ':file', function() {
     	var input = $(this),
         	numFiles = input.get(0).files ? input.get(0).files.length : 1,
         	label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    	input.trigger('fileselect', [numFiles, label]);
+    	input.trigger('fileselect', [numFiles, label]);				
   	});
 	
   	$(document).ready( function() {
@@ -191,7 +199,11 @@ $(function(){
 	
 	function handleFileSelect(evt) {		
 	  var f = evt.target.files[0]; // FileList object
-	  var reader = new FileReader();
+	  var reader = new FileReader();	
+	  
+	  attachment_blob = f;	  
+	  attachment_type = f.type;		
+	  
 	  // Closure to capture the file information.
 	  reader.onload = (function(theFile) {
 		return function(e) {
@@ -213,51 +225,71 @@ $(function(){
 	}
 	
 	/***********************************************************
+		Retrieving an attachment from a document & displaying	
+	************************************************************/	
+	
+	function getAttachment(_id, _attachment_name){			
+		
+		if(_id){
+			att_data = '';
+			localDB.getAttachment(_id, "attachment_name", function(err, blob_buffer) { 
+			   if (err) { 
+				  return console.log(err); 
+			   } else { 
+				  	
+				   var audio_exts = ['wav', 'mp3', 'mp4', 'm4a', 'ogg', 'wma' ];
+				   var img_exts = ['png', 'jpg']
+				   var doc_exts = ['pdf']
+				   var _url  = URL.createObjectURL(blob_buffer);				   
+				   var fSize = JSON.stringify(Math.floor(blob_buffer.size/1024));
+          		   var b_type = JSON.stringify(blob_buffer.type);				   
+				   var fileExt = _attachment_name.split('.').pop();					   
+				   
+				   if($.inArray(fileExt, doc_exts) >= 0){
+					  applicationType = "application/pdf";  
+					  var win = window.open(_url, '', "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=800,height=800,top="+(screen.height-950)+",left="+(screen.width-840));
+				   }
+				   
+				   if ($.inArray(fileExt, audio_exts) >= 0){					   
+					    var src_format = "data:audio/wav";
+					    var d = window.open('','',"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=320,height=200,top="+(screen.height-350)+",left="+(screen.width-540)).document;
+						d.write(''); d.close();							   
+						var ad = document.createElement('audio');					    
+					    ad.setAttribute('controls', 'controls');						   
+					    ad.setAttribute('src',  _url);						   
+					    ad.autoplay = true;
+					   /*
+					   	ad.load();
+					    ad.addEventListener("load", function() { 
+     					ad.play(); 
+ 						}, true);
+					   */
+						d.body.appendChild(ad);					   
+				   }
+				   
+				   if ($.inArray(fileExt, img_exts) >= 0){
+						applicationType = "data:image/png;base64,";
+						var d = window.open('','',"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=500,height=500,top="+(screen.height-650)+",left="+(screen.width-840)).document;
+						d.write(''); d.close();
+						d.body.appendChild(document.createElement('img')).src = _url;
+				   }
+			   } 
+			});
+		}		
+	}	
+		
+	/***********************************************************
 				Displaying Attachments
 	************************************************************/
-	
-	function Viewer(base64data){
 		
-		if(base64data){			
-			var decodedContent = atob(base64data.split('|')[1]);
-			var byteArray = new Uint8Array(decodedContent.length)
-			for(var i=0; i<decodedContent.length; i++){
-				byteArray[i] = decodedContent.charCodeAt(i);
-			}
-			var extension = base64data.split('|')[0].trim().split('.').pop();
-			var applicationType = "application/" + extension;   			
-			var img_exts = ["png","jpg", "PNG","JPG"];
-			var doc_exts = ["pdf","txt","docx"];													
-			
-			var blob = new Blob([byteArray.buffer], { type: applicationType });
-			var _url = URL.createObjectURL(blob);
-            
-			if ( $.inArray(extension.trim(), doc_exts) > -1 ) {				
-				var win = window.open(_url, base64data.split('|')[0], "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=800,height=800,top="+(screen.height-950)+",left="+(screen.width-840));
-			}
-			
-			if ( $.inArray(extension.trim(), img_exts) > -1 ) {
-				applicationType = "data:image/png;base64,";
-				var d = window.open('','',"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=500,height=500,top="+(screen.height-650)+",left="+(screen.width-840)).document;
-					d.write(''); d.close();
-					d.body.appendChild(document.createElement('img')).src = applicationType + base64data.split('|')[1];				
-			}			
-		}		
-	}		
-	
-	$('#contactList').on('click','.attachment', function(){		
-		var fname = $(this).text();					
-		var i=0;		
-		for (i; i < attachments.length; i++) 
-		{ 							
-			if( fname.trim() == attachments[i].split('|')[0].trim()){				
-				Viewer(attachments[i]);	
-			}			
-		}				
+	$('#contactList').on('click','.attachment', function(){			
+		var fname = $(this).text();		
+		var f_id =  $(this).attr('id');						
+		getAttachment(f_id, fname);		
 	});		
 	
 	/***********************************************************
-		 ContextMenu 
+		 			ContextMenu 
 	************************************************************/
 	var td_val;
 	var td_contactname;
@@ -285,24 +317,27 @@ $(function(){
     	$contextMenu.on("click", "a", function () {	
 			td_val = "";
 			td_contactname ="";
+			
 			if($(this).text().trim() == "Delete"){
 				td_val =$rowClicked.children("*")[0].innerHTML;
 				td_contactname = $rowClicked.children("*")[1].innerHTML;								     	
 			}
 			
-			if($(this).text().trim() == "Edit"){
+			if($(this).text().trim() == "Edit"){		
 				
+				 var $tds = $(this).closest('tr').find('td');
 				_id_rev = $rowClicked.children("*")[0].innerHTML;
 				_name = $rowClicked.children("*")[1].innerHTML;
 				_mobile = $rowClicked.children("*")[2].innerHTML;
 				_email = $rowClicked.children("*")[3].innerHTML;
-				_attachment = $rowClicked.children("*")[4].innerHTML;
+				_attachment = $rowClicked.children("*")[4].innerHTML.replace(/<.*?>/g," ").replace(/ +/g," ");				
 				
 				$('#id_rev').val(_id_rev);
 				$('#name').val(_name);
 				$('#mobile').val(_mobile);
 				$('#email').val(_email);
-								
+			    $('#in_filename').val(_attachment);
+				
 				$('#btn_save').removeClass('visible').addClass('invisible');
 				$('#btn_edit').removeClass('invisible').addClass('visible');
 			}
@@ -331,22 +366,46 @@ $(function(){
 	$('#confirm-delete').on('show.bs.modal', function(e) {
 		var data = $(e.relatedTarget).data();
 		$('.title', this).text(td_contactname);            
-    });	
-			
+    });			
 	
-	function playByteArray( bytes ) {
-    var buffer = new Uint8Array( bytes.length );
-    buffer.set( new Uint8Array(bytes), 0 );
+	function b64toBlob(b64Data, contentType, sliceSize) {
+		
+	  contentType = contentType || '';
+	  sliceSize = sliceSize || 512;
 
-    context.decodeAudioData(buffer.buffer, play);
-	}
+	  var byteCharacters = atob(b64Data);
+	  var byteArrays = [];
 
-	function play( audioBuffer ) {
-		var source = context.createBufferSource();
-		source.buffer = audioBuffer;
-		source.connect( context.destination );
-		source.start(0);
+	  for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+		var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+		var byteNumbers = new Array(slice.length);
+		for (var i = 0; i < slice.length; i++) {
+		  byteNumbers[i] = slice.charCodeAt(i);
+		}
+
+		var byteArray = new Uint8Array(byteNumbers);
+
+		byteArrays.push(byteArray);
+	  }
+
+	  var blob = new Blob(byteArrays, {type: contentType});
+	  return blob;
 	}
 	
+	/****************************************************************
+				Deleting database
+	*****************************************************************/
+	function DeleteDB(){
+		
+		localDB.destroy(function (err, response) {
+		   if (err) {
+			  return console.log(err);
+		   } else {
+			  console.log ("Database Deleted”);
+		   }
+		});	
+	}
+		
 });
 
