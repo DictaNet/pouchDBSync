@@ -396,7 +396,8 @@ $(function(){
 	/****************************************************************
 				Deleting database
 	*****************************************************************/
-	function DeleteDB(){
+	
+	/*function DeleteDB(){
 		
 		localDB.destroy(function (err, response) {
 		   if (err) {
@@ -406,6 +407,7 @@ $(function(){
 		   }
 		});	
 	}
+	*/	
 		
 });
 
