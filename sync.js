@@ -5,7 +5,7 @@ $(function(){
 	// local database, that lives in the browser's IndexedDB store
 	var localDB = new PouchDB('contacts');
 	// remote CouchDB 
-	var remoteDB = new PouchDB('https://4ae56e42.ngrok.io/contacts');	
+	var remoteDB = new PouchDB('https://pouchdb.ngrok.io/contacts');	
 	var attachment_name = "";
 	var attachment_content_base64 = "";
 	var attachment_blob = "";
@@ -248,6 +248,8 @@ $(function(){
 				   if($.inArray(fileExt, doc_exts) >= 0){
 					  applicationType = "application/pdf";  
 					  var win = window.open(_url, '', "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=800,height=800,top="+(screen.height-950)+",left="+(screen.width-840));
+					   win.write(''); 
+					   win.close();	
 				   }
 				   
 				   if ($.inArray(fileExt, audio_exts) >= 0){					   
