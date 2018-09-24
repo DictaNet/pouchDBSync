@@ -210,8 +210,7 @@ $(function(){
 		  var binaryData = e.target.result;					
 		  //Converting Binary Data to base 64
 		  attachment_content_base64 = window.btoa(binaryData);
-		  attachment_name = theFile.name;
-		  //console.log(attachment_content_base64);			
+		  attachment_name = theFile.name;		  		
 		};
 	  })(f);	  
 	  // Read in the image file as a data URL.
@@ -244,9 +243,10 @@ $(function(){
 				   var fSize = JSON.stringify(Math.floor(blob_buffer.size/1024));
           		   var b_type = JSON.stringify(blob_buffer.type);				   
 				   var fileExt = _attachment_name.split('.').pop();					   
-				   
-				   if($.inArray(fileExt, doc_exts) >= 0){
-					  applicationType = "application/pdf";  
+				   				   
+				   if($.inArray(fileExt, doc_exts) >= 0){					 
+					   var bdata = new Blob([blob_buffer], {type: "application/pdf"})
+					  _url  = URL.createObjectURL(bdata);	
 					  var win = window.open(_url, '', "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=800,height=800,top="+(screen.height-950)+",left="+(screen.width-840));
 					   win.write(''); 
 					   win.close();	
@@ -286,7 +286,7 @@ $(function(){
 		
 	$('#contactList').on('click','.attachment', function(){			
 		var fname = $(this).text();		
-		var f_id =  $(this).attr('id');						
+		var f_id =  $(this).attr('id');			
 		getAttachment(f_id, fname);		
 	});		
 	
