@@ -174,7 +174,8 @@ $(function(){
 		
 	/***********************************************************
 		Processing attachment before uploading to Database
-	************************************************************/	  			
+	************************************************************/	 
+	var fileList = [];
 	$(document).on('change', ':file', function() {
     	var input = $(this),
         	numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -221,15 +222,15 @@ $(function(){
     	var reader = new FileReader();
     	reader.onload = function() { callback(reader.result) };
     	reader.readAsDataURL(file);
-	}
+	}		
 	
 	/***********************************************************
 		Retrieving an attachment from a document & displaying	
 	************************************************************/	
 	
-	function getAttachment(_id, _attachment_name){			
+	function getAttachment(_id, _attachment_name) {			
 		
-		if(_id){
+		if(_id) {
 			att_data = '';
 			localDB.getAttachment(_id, "attachment_name", function(err, blob_buffer) { 
 			   if (err) { 
@@ -243,16 +244,15 @@ $(function(){
 				   var fSize = JSON.stringify(Math.floor(blob_buffer.size/1024));
           		   var b_type = JSON.stringify(blob_buffer.type);				   
 				   var fileExt = _attachment_name.split('.').pop();					   
-				   				   
+				   
 				   if($.inArray(fileExt, doc_exts) >= 0){					 
 					   var bdata = new Blob([blob_buffer], {type: "application/pdf"})
 					  _url  = URL.createObjectURL(bdata);	
 					  var win = window.open(_url, '', "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=800,height=800,top="+(screen.height-950)+",left="+(screen.width-840));
 					   win.write(''); 
 					   win.close();	
-				   }
-				   
-				   if ($.inArray(fileExt, audio_exts) >= 0){					   
+				   }				   
+				   else if ($.inArray(fileExt, audio_exts) >= 0){					   
 					    var src_format = "data:audio/wav";
 					    var d = window.open('','',"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=320,height=200,top="+(screen.height-350)+",left="+(screen.width-540)).document;
 						d.write(''); d.close();							   
@@ -267,13 +267,15 @@ $(function(){
  						}, true);
 					   */
 						d.body.appendChild(ad);					   
-				   }
-				   
-				   if ($.inArray(fileExt, img_exts) >= 0){
+				   }				   
+				   else if ($.inArray(fileExt, img_exts) >= 0){
 						applicationType = "data:image/png;base64,";
 						var d = window.open('','',"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=500,height=500,top="+(screen.height-650)+",left="+(screen.width-840)).document;
 						d.write(''); d.close();
 						d.body.appendChild(document.createElement('img')).src = _url;
+				   }
+				   else{					  
+					   download(blob_buffer, _attachment_name, b_type);
 				   }
 			   } 
 			});
@@ -325,7 +327,7 @@ $(function(){
 				td_contactname = $rowClicked.children("*")[1].innerHTML;								     	
 			}
 			
-			if($(this).text().trim() == "Edit"){		
+			if($(this).text().trim() == "Edit") {		
 				
 				 var $tds = $(this).closest('tr').find('td');
 				_id_rev = $rowClicked.children("*")[0].innerHTML;
