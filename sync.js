@@ -55,7 +55,7 @@ $(function(){
 			 
 			  var ui_attachment = '<button id="'+ contact._id +'" type="button" class="btn btn-default attachment"'+'"><span class="glyphicon glyphicon-file"></span>' + contact.FileName +'</button>'+'</td></tr>';			 
               
-			  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + ui_attachment;			
+			  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + ui_attachment;		
 			  
               var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
 				
