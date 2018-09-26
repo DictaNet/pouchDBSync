@@ -18,7 +18,8 @@ $(function(){
 	**********************************************************/	
     function loadContacts() {		
 		clearContactList();
-		remoteDB.allDocs({include_docs: true,attachments : true, attachment_format: 'base64', startkey: "rmo_", endkey: "rmo_\ufff0"},function(err, docs) {			
+		//remoteDB.allDocs({include_docs: true,attachments : true, attachment_format: 'base64', startkey: "rmo_", endkey: "rmo_\ufff0"},function(err, docs) {			
+		remoteDB.allDocs({include_docs: true,attachments : true, attachment_format: 'base64'},function(err, docs) {			
 		   if (err) {
 			  return console.log(err);
 		   } else {			  
@@ -50,9 +51,10 @@ $(function(){
 			 //console.log(contact);		
 			  var newContact = '';
 			  var fileExt = contact.FileName.split('.').pop();	
-			  var contenttype = JSON.stringify(contact._attachments.attachment_name.content_type);
+			  //var contenttype = JSON.stringify(contact._attachments.attachment_name.content_type);
 			 
-              var ui_attachment = '<button id="'+ contact._id +'" type="button" class="btn btn-default attachment"'+'"><span class="glyphicon glyphicon-file"></span>' + contact.FileName +'</button>'+'</td></tr>';
+			  var ui_attachment = '<button id="'+ contact._id +'" type="button" class="btn btn-default attachment"'+'"><span class="glyphicon glyphicon-file"></span>' + contact.FileName +'</button>'+'</td></tr>';			 
+              
 			  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + ui_attachment;			
 			  
               var newContactWithoutAttachment = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' +'</td></tr>';			  
@@ -87,10 +89,8 @@ $(function(){
 				Email : email,
 				Mobile : mobile,
 				FileName : attachment_name,
-				_attachments:
-				{
-					attachment_name:
-					{
+				_attachments:{
+					attachment_name:{
 						type: attachment_type,
 						data :attachment_blob
 					}
@@ -112,10 +112,8 @@ $(function(){
 				"Email" : email,
 				"Mobile" : mobile,
 				"FileName" : attachment_name,
-				"_attachments":
-				{
-					attachment_name:
-					{
+				"_attachments":{
+					attachment_name:{
 						type: attachment_type,
 						data :attachment_blob
 					}
@@ -166,7 +164,7 @@ $(function(){
 	  // replicate resumed (e.g. new changes replicating, user went back online)
 	}).on('denied', function (err) {
 	  // a document failed to replicate (e.g. due to permissions)
-	}).on('complete', function (info){
+	}).on('complete', function (info) {
 	  // handle complete
 	}).on('error', function (err) {
 	  // handle error
