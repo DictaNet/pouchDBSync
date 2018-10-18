@@ -69,7 +69,7 @@ $(function(){
 	}
 	
 	/********************************************************************************
-		Insert Data to local PouchDB (which inturn will be synced to remote CouchDB )
+		Insert Data to local PouchDB (which inturn will be synced to remote CouchDB)
 	*********************************************************************************/
 	
 	$('#contactForm button').click(function(event) {				
@@ -88,7 +88,7 @@ $(function(){
 				Name : name,
 				Email : email,
 				Mobile : mobile,
-				FileName : attachment_name,
+				FileName : attachment_name,				
 				_attachments:{
 					attachment_name:{
 						type: attachment_type,
@@ -101,7 +101,9 @@ $(function(){
 				console.log("Document created Successfully", response)
 			  }).then(function (err) {
 				console.log("Error", err)
-			  });				
+			  });		
+			attachment_type = "";
+			attachment_blob = "";
 		}
 		
 		if ($(this).attr("value") == "update") {				
@@ -118,6 +120,8 @@ $(function(){
 						data :attachment_blob
 					}
 			    }
+				attachment_type = "";
+				attachment_blob = "";
 		   }			
 			
 			localDB.put(doc).then(function (response) {
@@ -192,7 +196,7 @@ $(function(){
 		  	} else {
 				if( log ) alert(log);
 		  	}
-
+			
 	  	});
   	});
 	
