@@ -102,8 +102,7 @@ $(function(){
 			  }).then(function (err) {
 				console.log("Error", err)
 			  });		
-			attachment_type = "";
-			attachment_blob = "";
+			
 		}
 		
 		if ($(this).attr("value") == "update") {				
@@ -119,9 +118,7 @@ $(function(){
 						type: attachment_type,
 						data :attachment_blob
 					}
-			    }
-				attachment_type = "";
-				attachment_blob = "";
+			    }				
 		   }			
 			
 			localDB.put(doc).then(function (response) {
@@ -135,7 +132,8 @@ $(function(){
 	   }
 		
        $('#contactForm')[0].reset();
-		
+		attachment_type = "";
+			attachment_blob = "";
     });
 			
 	/********************************************************************************
