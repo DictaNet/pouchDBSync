@@ -49,10 +49,7 @@ $(function(){
 		
 		remoteDB.get(_id, {attachments: true}).then(function (contact) { 
 			 //console.log(contact);		
-			  var newContact = '';
-			  var fileExt = contact.FileName.split('.').pop();	
-			  //var contenttype = JSON.stringify(contact._attachments.attachment_name.content_type);
-			 
+			  var newContact = '';			 
 			  var ui_attachment = '<button id="'+ contact._id +'" type="button" class="btn btn-default attachment"'+'"><span class="glyphicon glyphicon-file"></span>' + contact.FileName +'</button>'+'</td></tr>';			 
               
 			  newContact = '<tr><td>' + contact._id + '|' + contact._rev + '</td><td>' + contact.Name + '</td><td>' + contact.Mobile + '</td><td>' + contact.Email + '</td><td>' + ui_attachment;		
@@ -325,7 +322,7 @@ $(function(){
 			if($(this).text().trim() == "Delete"){
 				td_val =$rowClicked.children("*")[0].innerHTML;
 				td_contactname = $rowClicked.children("*")[1].innerHTML;								     	
-			}
+			} 
 			
 			if($(this).text().trim() == "Edit") {		
 				
